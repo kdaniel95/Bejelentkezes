@@ -11,7 +11,7 @@
         
         <h1>Ez az admin felület</h1>
         <br>
-        <a href="./">&gt;&gt;Vissza a központi adminisztrációs felületre</a>
+        <a href="./">&lt;&lt;Vissza a központi adminisztrációs felületre</a>
         
     </body>
     

@@ -9,9 +9,9 @@ class BejelentkeztetesController extends Controller {
     function index() {
         if ($_POST) {
             $this->loadModel('user');
-
+            
             $this->model->userFeltolt($_POST['fnev']);
-
+            echo $this ->model->sikertelen;
 
             if ($this->kellECaptcha()) {
                 $this->setCaptcha(true);
@@ -34,14 +34,10 @@ class BejelentkeztetesController extends Controller {
         $pw_hash = $this->model->jelszo_hash;
 
         if (password_verify($pw_plaintext, $pw_hash)) {
-            $this->model->saveLog($_POST['fnev'], $_SERVER['REMOTE_ADDR'], 1);
+            $this->model->mentLog($_POST['fnev'], $_SERVER['REMOTE_ADDR'], 1);
             $this->model->setUtBejelDatum($_POST['fnev']);
 
-            $userinfo = [
-                        "fnev" => $this->model->fnev,
-                        "szerepkorok" => $this->model->szerepkorok,
-                        "utbejeldatum" => $this -> model -> utbejeldatum
-                        ];
+            $userinfo = $this->model -> user_infok();
             $_SESSION['loggedin'] = true;
             $_SESSION['userinfo'] = $userinfo;
             Helper::redirect('felulet/');
@@ -69,7 +65,7 @@ class BejelentkeztetesController extends Controller {
 
     private function kellECaptcha() {
         $this->model->setSikertelen($_POST['fnev'], $_SERVER['REMOTE_ADDR']);
-        return $this->model->sikertelen>= 3;
+        return $this->model->sikertelen>=3;
     }
 
     private function setCaptcha($b) {
@@ -77,7 +73,7 @@ class BejelentkeztetesController extends Controller {
     }
 
     private function sikertelenBejelentkezes() {
-        $this->model->saveLog($_POST['fnev'], $_SERVER['REMOTE_ADDR'], 0);
+        $this->model->mentLog($_POST['fnev'], $_SERVER['REMOTE_ADDR'], 0);
         Helper::redirect("./");
     }
 

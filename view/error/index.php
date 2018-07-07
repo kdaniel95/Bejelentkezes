@@ -10,7 +10,7 @@
 
         <h1>Nem rendelkezik a megfelelő szerepkörrel az aloldal megtekintéséhez.</h1>
         <br>
-        <a href="./">&gt;&gt;Vissza a központi adminisztrációs felületre</a>
+        <a href="./">&Lt;&Lt;Vissza a központi adminisztrációs felületre</a>
 
     </body>
 
