@@ -45,8 +45,8 @@ class UserModel extends Model {
             while ($row = $result->fetch_assoc()) {
                 $this->fid = $row['fid'];
                 $this->fnev = $row['fnev'];
-                $h_szerepkor =  new Szerepkor(intval($row['szkid']), $row['megnevezes']);
-                array_push($this->szerepkorok,(array) $h_szerepkor);
+                $h_szerepkor = new Szerepkor(intval($row['szkid']), $row['megnevezes']);
+                array_push($this->szerepkorok, $h_szerepkor);
                 $this->jelszo_hash = $row['jelszo'];
             }
         } else {
@@ -65,16 +65,16 @@ class UserModel extends Model {
                         AND log.datum = CURRENT_DATE()
                         ORDER BY
                         logid";
-        
+
 
         $sikertelen = 0;
 
         $result = $this->conn->query($sql);
-        
+
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
 
-                
+
                 if (!boolval($row['sikeres'])) {
                     $sikertelen++;
                 } else {
@@ -111,10 +111,75 @@ class UserModel extends Model {
         }
     }
 
-    public function saveLog($fnev,$ip,$sikeres) {
-        $sql = "INSERT INTO `log` (`fnev`, `ip`, `datum`, `sikeres`) VALUES ('".$this->conn->real_escape_string($fnev)."','".$this->conn->real_escape_string($ip)."',NOW(),".$this->conn->real_escape_string($sikeres).")";
+    public function mentLog($fnev, $ip, $sikeres) {
+        $sql = "INSERT INTO `log` (`fnev`, `ip`, `datum`, `sikeres`) VALUES ('" . $this->conn->real_escape_string($fnev) . "','" . $this->conn->real_escape_string($ip) . "',NOW()," . $this->conn->real_escape_string($sikeres) . ")";
 
-        $this -> conn->query($sql);
+        $this->conn->query($sql);
+    }
+
+     private function szerepkorok_string($szerepkorok_arr) {
+        $szerepkorok_string = "";
+        if (count($szerepkorok_arr) == 1) {
+            $szerepkorok_string = $szerepkorok_arr[0] -> megnevezes;
+        } else {
+            foreach ($szerepkorok_arr as $k => $v) {
+                $szerepkorok_string .= $v -> megnevezes." + ";
+            }
+            $szerepkorok_string = substr($szerepkorok_string, 0, strlen($szerepkorok_string) - 3);
+        }
+
+        return $szerepkorok_string;
+    }
+    
+    public function user_infok() {
+        return 
+        [
+            'fnev' => $this->fnev,
+            'utbejeldatum' => $this->utbejeldatum,
+            'szerepkorok' => $this->tombosit($this -> szerepkorok),
+            'szerepkorok_string' => $this-> szerepkorok_string($this-> szerepkorok),
+            'elerhetomenuk' => $this->elerheto_menuk()
+        ];
+    }
+    
+    public function elerheto_menuk(){
+        $menuk = "";
+
+        if ($this->benneVan(1, $this->szerepkorok)) {
+            $menuk .= "<li><a href='./adminfelulet'>Admin felület</a></li>";
+            $menuk .= "<li><a href='./bejelentkezettfelhasznalofelulet'>Bejelentkezett felhasználó felület</a></li>";
+            $menuk .= "<li><a href='./tartalomszerkesztofelulet'>Tartalomszerkesztő felület</a></li>";
+        }
+
+        if ($this->benneVan(2, $this->szerepkorok)) {
+            $menuk .= "<li><a href='./tartalomszerkesztofelulet'>Tartalomszerkesztő felület</a></li>";
+        }
+
+        if ($this->benneVan(3, $this->szerepkorok)) {
+            $menuk .= "<li><a href='./bejelentkezettfelhasznalofelulet'>Bejelentkezett felhasználó felület</a></li>";
+        }
+
+        return $menuk;
+    }
+    
+    private function benneVan($keresett, $miben){
+        $index = 0;
+        $n = count($miben);
+
+        while ($n > $index && $miben[$index] -> szkid != $keresett) {
+            $index++;
+        }
+
+        return $index < $n;
+    }
+    
+    private function tombosit($mit){
+        $tmp_tomb = [];
+        
+        foreach($mit as $k=> $v){
+            array_push($tmp_tomb, (array)$v);
+        }
+        return $tmp_tomb;
     }
 
     public function __get($name) {
